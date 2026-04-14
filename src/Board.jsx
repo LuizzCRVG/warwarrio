@@ -8,10 +8,13 @@ export function WarBoard({ G, ctx, moves, events }) {
   const [targetTerritory, setTargetTerritory] = useState(null); 
   const [selectedCards, setSelectedCards] = useState([]);
   
-  const [isInfoVisible, setIsInfoVisible] = useState(false);
+  // NOVO: Separamos os estados de visualização!
+  const [isObjectiveVisible, setIsObjectiveVisible] = useState(false);
+  const [isCardsVisible, setIsCardsVisible] = useState(false);
 
   useEffect(() => {
-    setIsInfoVisible(false);
+    setIsObjectiveVisible(false);
+    setIsCardsVisible(false);
     setSelectedTerritory(null);
     setTargetTerritory(null);
     setSelectedCards([]);
@@ -103,7 +106,8 @@ export function WarBoard({ G, ctx, moves, events }) {
 
     setSelectedTerritory(null); setTargetTerritory(null); setSelectedCards([]);
     
-    if (ctx.phase === 'initialDraft') {
+    // Tratamento exclusivo para pular o turno na fase de Fortalecimento Inicial
+    if (ctx.phase === 'initialReinforcement') {
       events.endTurn();
       return;
     }
@@ -119,6 +123,55 @@ export function WarBoard({ G, ctx, moves, events }) {
     (G.pendingOccupation !== null); 
 
   const shapeIcons = { 'Triângulo': '▲', 'Quadrado': '■', 'Círculo': '●', 'Coringa': '★' };
+
+  // ============================================================================
+  // DICIONÁRIO DE CARTOGRAFIA
+  // ============================================================================
+  const customMaps = {
+    'N15_IlhaGovernador': 'mapa.png',
+    'N07_IpanemaLeblon': 'mapa1.png',
+    'N08_RocinhaGavea': 'mapa2.png',
+    'N06_Copacabana': 'mapa3.png',
+    'N05_GloriaBotafogo': 'mapa4.png',
+    'N02_Lapa': 'mapa5.png',
+    'N01_Centro': 'mapa6.png',
+    'N03_Saude': 'mapa7.png',
+    'N04_RioComprido': 'mapa8.png',
+    'N09_GrandeTijuca': 'mapa9.png',
+    'N10_SaoCristovao': 'mapa10.png',
+    'N11_ComplexoAlemao': 'mapa11.png',
+    'N12_GrandeMeier': 'mapa12.png',
+    'N13_Madureira': 'mapa13.png',
+    'N14_Pavuna': 'mapa14.png',
+    'N16_BarraTijuca': 'mapa15.png',
+    'N17_Jacarepagua': 'mapa16.png',
+    'N18_Bangu': 'mapa17.png',
+    'N19_CampoGrande': 'mapa18.png',
+    'N20_SantaCruz': 'mapa19.png',
+    'N21_Guaratiba': 'mapa20.png',
+    'N24_Nilopolis': 'mapa21.png',
+    'N25_Mesquita': 'mapa22.png',
+    'N26_BelfordRoxo': 'mapa23.png',
+    'N23_SaoJoaoMeriti': 'mapa24.png',
+    'N22_DuqueCaxias': 'mapa25.png',
+    'N27_NovaIguacu': 'mapa26.png',
+    'N28_Queimados': 'mapa27.png',
+    'N30_Mage': 'mapa28.png',
+    'N29_Japeri': 'mapa29.png',
+    'N31_CentroNit': 'mapa30.png',
+    'N32_Icarai': 'mapa31.png',
+    'N33_RegiaoOceanica': 'mapa32.png',
+    'N34_Pendotiba': 'mapa33.png',
+    'N35_Fonseca': 'mapa34.png',
+    'N36_Engenhoca': 'mapa35.png',
+    'N37_Neves': 'mapa36.png',
+    'N38_ZeGaroto': 'mapa37.png',
+    'N39_Mutua': 'mapa38.png',
+    'N40_Alcantara': 'mapa39.png',
+    'N41_JardimCatarina': 'mapa40.png',
+    'N42_Guaxindiba': 'mapa41.png',
+
+  };
 
   return ctx.gameover ? (
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', zIndex: 10000, fontFamily: 'monospace', textAlign: 'center', padding: '20px' }}>
@@ -138,27 +191,25 @@ export function WarBoard({ G, ctx, moves, events }) {
           <div style={{ marginBottom: '20px', padding: '15px', border: `2px solid ${currentPlayer.color}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px' }}>
             
             <div style={{ flex: '1', minWidth: '250px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h2 style={{ margin: 0 }}>Painel Tático</h2>
-                <button 
-                  onClick={() => setIsInfoVisible(!isInfoVisible)}
-                  style={{ padding: '8px 12px', backgroundColor: '#444', color: '#fff', border: '1px solid #666', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  {isInfoVisible ? '🙈 Ocultar Dados' : '👁️ Revelar Dados'}
+              <h2 style={{ margin: '0 0 10px 0' }}>Painel Tático</h2>
+
+              <p>Comandante: <strong style={{color: currentPlayer.color}}>{currentPlayer.faction}</strong> | Fase: <strong style={{color: '#ffdd55'}}>{ctx.phase === 'initialReinforcement' ? 'FORTALECIMENTO INICIAL' : stageNames[currentStage]}</strong></p>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                <span style={{ margin: 0 }}>Missão Secreta:</span>
+                <button onClick={() => setIsObjectiveVisible(!isObjectiveVisible)} style={{ padding: '2px 8px', backgroundColor: '#444', color: '#fff', border: '1px solid #666', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                  {isObjectiveVisible ? '🙈 Ocultar' : '👁️ Revelar'}
                 </button>
               </div>
-
-              <p>Comandante: <strong style={{color: currentPlayer.color}}>{currentPlayer.faction}</strong> | Fase: <strong style={{color: '#ffdd55'}}>{ctx.phase === 'initialDraft' ? 'PREPARAÇÃO (Fase Zero)' : stageNames[currentStage]}</strong></p>
-              
-              <p>Missão Secreta: {' '}
+              <p style={{ marginTop: '5px' }}>
                 <strong style={{
-                  color: isInfoVisible ? '#ffaa00' : '#888', 
-                  backgroundColor: isInfoVisible ? 'transparent' : '#2a2a2a', 
-                  padding: isInfoVisible ? '0' : '2px 10px', 
+                  color: isObjectiveVisible ? '#ffaa00' : '#888', 
+                  backgroundColor: isObjectiveVisible ? 'transparent' : '#2a2a2a', 
+                  padding: isObjectiveVisible ? '0' : '2px 10px', 
                   borderRadius: '4px',
-                  letterSpacing: isInfoVisible ? 'normal' : '2px'
+                  letterSpacing: isObjectiveVisible ? 'normal' : '2px'
                 }}>
-                  {isInfoVisible ? getObjectiveDesc(currentPlayer.objective) : '•••••••••••••••• (Oculto)'}
+                  {isObjectiveVisible ? getObjectiveDesc(currentPlayer.objective) : '•••••••••••••••• (Oculto)'}
                 </strong>
               </p>
 
@@ -221,11 +272,17 @@ export function WarBoard({ G, ctx, moves, events }) {
             </div>
 
             <div style={{ backgroundColor: '#2a2a2a', padding: '15px', borderRadius: '5px', minWidth: '200px' }}>
-              <h3 style={{ margin: '0 0 10px 0' }}>Inventário</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h3 style={{ margin: 0 }}>Inventário</h3>
+                <button onClick={() => setIsCardsVisible(!isCardsVisible)} style={{ padding: '2px 8px', backgroundColor: '#444', color: '#fff', border: '1px solid #666', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                  {isCardsVisible ? '🙈 Ocultar' : '👁️ Revelar'}
+                </button>
+              </div>
+
               <div style={{ 
                 display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px',
-                filter: isInfoVisible ? 'none' : 'blur(6px)',
-                pointerEvents: isInfoVisible ? 'auto' : 'none', 
+                filter: isCardsVisible ? 'none' : 'blur(6px)',
+                pointerEvents: isCardsVisible ? 'auto' : 'none', 
                 transition: 'filter 0.3s ease'
               }}>
                 {currentPlayer.cards.length === 0 && <span style={{color: '#666', fontSize: '12px'}}>Sem cartas no momento.</span>}
@@ -247,14 +304,13 @@ export function WarBoard({ G, ctx, moves, events }) {
               {(selectedTerritory || targetTerritory) && !G.pendingOccupation && (
                  <button onClick={() => { setSelectedTerritory(null); setTargetTerritory(null); }} style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#555', color: 'white', border: 'none' }}>Cancelar</button>
               )}
-              <button onClick={handleNextStep} disabled={isNextButtonDisabled} style={{ padding: '10px 20px', cursor: isNextButtonDisabled ? 'not-allowed' : 'pointer', backgroundColor: currentStage === 'maneuver' || ctx.phase === 'initialDraft' ? '#d9534f' : '#5bc0de', color: 'white', border: 'none', fontWeight: 'bold' }}>
-                {ctx.phase === 'initialDraft' ? 'Passar Vez' : currentStage === 'maneuver' ? 'Encerrar Turno' : 'Avançar Fase ➔'}
+              <button onClick={handleNextStep} disabled={isNextButtonDisabled} style={{ padding: '10px 20px', cursor: isNextButtonDisabled ? 'not-allowed' : 'pointer', backgroundColor: currentStage === 'maneuver' || ctx.phase === 'initialReinforcement' ? '#d9534f' : '#5bc0de', color: 'white', border: 'none', fontWeight: 'bold' }}>
+                {ctx.phase === 'initialReinforcement' ? 'Encerrar Fortalecimento' : currentStage === 'maneuver' ? 'Encerrar Turno' : 'Avançar Fase ➔'}
               </button>
             </div>
           </div>
         )}
 
-        {/* RELATÓRIOS E DIÁRIO DE GUERRA */}
         <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
           
           {!currentPlayer.eliminated && G.lastCombat && currentStage === 'attack' && (
@@ -280,7 +336,7 @@ export function WarBoard({ G, ctx, moves, events }) {
           </div>
         </div>
 
-        {/* CARTOGRAFIA VISUAL COM SUPORTE A FORMATOS CUSTOMIZADOS (MASK) */}
+        {/* CARTOGRAFIA VISUAL COM RENDERIZAÇÃO DINÂMICA */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', opacity: currentPlayer.eliminated ? 0.2 : 1, pointerEvents: currentPlayer.eliminated ? 'none' : 'auto' }}>
           
           {Object.entries(G.continents).map(([continentKey, continentObj]) => (
@@ -309,13 +365,12 @@ export function WarBoard({ G, ctx, moves, events }) {
                   }
 
                   const isDimmed = selectedTerritory && !isSelected && !isHighlight && !isTarget;
-                  
-                  // LÓGICA DE CORES: Mantemos a lógica padrão para o stroke (borda) e fill (fundo)
                   const borderColor = isTarget ? '#ff4444' : isSelected ? '#ffffff' : (isHighlight ? highlightColor : ownerData.color);
                   const bgColor = isSelected ? '#444' : isTarget ? '#522' : '#2a2a2a';
+                  
+                  const customMask = customMaps[id];
 
-                 // === MÁGICA 1: ILHA DO GOVERNADOR ===
-                  if (id === 'N15_IlhaGovernador') {
+                  if (customMask) {
                     return (
                       <div key={id} onClick={() => handleTerritoryClick(id)}
                         style={{
@@ -333,7 +388,7 @@ export function WarBoard({ G, ctx, moves, events }) {
                         <div style={{
                           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                           backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa.png)', maskImage: 'url(/mapa.png)',
+                          WebkitMaskImage: `url(/${customMask})`, maskImage: `url(/${customMask})`,
                           WebkitMaskSize: 'contain', maskSize: 'contain',
                           WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
                           WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
@@ -348,279 +403,6 @@ export function WarBoard({ G, ctx, moves, events }) {
                     );
                   }
 
-                  // === MÁGICA 2: IPANEMA/LEBLON ===
-                  else if (id === 'N07_IpanemaLeblon') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa1.png)', maskImage: 'url(/mapa1.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 3: ROCINHA/GÁVEA ===
-                  else if (id === 'N08_RocinhaGavea') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa2.png)', maskImage: 'url(/mapa2.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 4: COPACABANA / LEME ===
-                  else if (id === 'N06_Copacabana') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa3.png)', maskImage: 'url(/mapa3.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 5: GLÓRIA / BOTAFOGO ===
-                  else if (id === 'N05_GloriaBotafogo') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa4.png)', maskImage: 'url(/mapa4.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 6: LAPA ===
-                  else if (id === 'N02_Lapa') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa5.png)', maskImage: 'url(/mapa5.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 7: CENTRO ===
-                  else if (id === 'N01_Centro') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa6.png)', maskImage: 'url(/mapa6.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 8: SAÚDE ===
-                  else if (id === 'N03_Saude') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa7.png)', maskImage: 'url(/mapa7.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === MÁGICA 9: RIO COMPRIDO ===
-                  else if (id === 'N04_RioComprido') {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: 'url(/mapa8.png)', maskImage: 'url(/mapa8.png)', 
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // === RENDERIZAÇÃO PADRÃO PARA OS OUTROS TERRITÓRIOS ===
                   return (
                     <div key={id} onClick={() => handleTerritoryClick(id)}
                       style={{

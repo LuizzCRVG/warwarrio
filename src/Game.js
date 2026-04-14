@@ -2,53 +2,58 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 
 const connections = {
-  // Histórico
+  // Histórico (ATUALIZADO: Saúde e Rio Comprido agora se conectam)
   'N01_Centro': ['N02_Lapa', 'N03_Saude', 'N05_GloriaBotafogo', 'N31_CentroNit'], 
   'N02_Lapa': ['N01_Centro', 'N03_Saude', 'N04_RioComprido', 'N05_GloriaBotafogo'], 
-  'N03_Saude': ['N01_Centro', 'N02_Lapa', 'N10_SaoCristovao'],
-  'N04_RioComprido': ['N02_Lapa', 'N09_GrandeTijuca'],
+  'N03_Saude': ['N01_Centro', 'N02_Lapa', 'N04_RioComprido', 'N10_SaoCristovao'], // Adicionado N04
+  'N04_RioComprido': ['N02_Lapa', 'N03_Saude', 'N09_GrandeTijuca', 'N10_SaoCristovao'], // Adicionado N03
+  
   // Zona Sul
   'N05_GloriaBotafogo': ['N01_Centro', 'N02_Lapa', 'N06_Copacabana'], 
   'N06_Copacabana': ['N05_GloriaBotafogo', 'N07_IpanemaLeblon'], 
   'N07_IpanemaLeblon': ['N06_Copacabana', 'N08_RocinhaGavea'], 
   'N08_RocinhaGavea': ['N07_IpanemaLeblon', 'N16_BarraTijuca'],
+  
   // Zona Norte
-  'N09_GrandeTijuca': ['N04_RioComprido', 'N12_GrandeMeier', 'N10_SaoCristovao'],
-  'N10_SaoCristovao': ['N03_Saude', 'N09_GrandeTijuca', 'N11_ComplexoAlemao'],
-  'N11_ComplexoAlemao': ['N10_SaoCristovao', 'N13_Madureira', 'N14_Pavuna', 'N15_IlhaGovernador'],
-  'N12_GrandeMeier': ['N09_GrandeTijuca', 'N13_Madureira'],
-  'N13_Madureira': ['N12_GrandeMeier', 'N11_ComplexoAlemao', 'N14_Pavuna', 'N17_Jacarepagua'],
-  'N14_Pavuna': ['N11_ComplexoAlemao', 'N13_Madureira', 'N23_SaoJoaoMeriti'], 
-  'N15_IlhaGovernador': ['N11_ComplexoAlemao', 'N22_DuqueCaxias'], 
+  'N09_GrandeTijuca': ['N04_RioComprido', 'N10_SaoCristovao', 'N12_GrandeMeier'],
+  'N10_SaoCristovao': ['N03_Saude', 'N04_RioComprido', 'N09_GrandeTijuca', 'N11_ComplexoAlemao', 'N12_GrandeMeier'],
+  'N11_ComplexoAlemao': ['N10_SaoCristovao', 'N12_GrandeMeier', 'N13_Madureira', 'N14_Pavuna', 'N15_IlhaGovernador'],
+  'N12_GrandeMeier': ['N09_GrandeTijuca', 'N10_SaoCristovao', 'N11_ComplexoAlemao', 'N13_Madureira'],
+  'N13_Madureira': ['N11_ComplexoAlemao', 'N12_GrandeMeier', 'N14_Pavuna', 'N17_Jacarepagua', 'N18_Bangu'], 
+  'N14_Pavuna': ['N11_ComplexoAlemao', 'N13_Madureira', 'N18_Bangu', 'N22_DuqueCaxias', 'N23_SaoJoaoMeriti', 'N24_Nilopolis'], 
+  'N15_IlhaGovernador': ['N11_ComplexoAlemao', 'N22_DuqueCaxias'],
+  
   // Zona Oeste
   'N16_BarraTijuca': ['N08_RocinhaGavea', 'N17_Jacarepagua', 'N21_Guaratiba'],
-  'N17_Jacarepagua': ['N16_BarraTijuca', 'N18_Bangu', 'N13_Madureira'],
-  'N18_Bangu': ['N17_Jacarepagua', 'N19_CampoGrande'],
+  'N17_Jacarepagua': ['N13_Madureira', 'N16_BarraTijuca', 'N18_Bangu'], 
+  'N18_Bangu': ['N13_Madureira', 'N14_Pavuna', 'N17_Jacarepagua', 'N19_CampoGrande'], 
   'N19_CampoGrande': ['N18_Bangu', 'N20_SantaCruz', 'N21_Guaratiba', 'N27_NovaIguacu'], 
   'N20_SantaCruz': ['N19_CampoGrande', 'N21_Guaratiba', 'N29_Japeri'], 
   'N21_Guaratiba': ['N16_BarraTijuca', 'N19_CampoGrande', 'N20_SantaCruz'],
+  
   // Baixada Fluminense
-  'N22_DuqueCaxias': ['N23_SaoJoaoMeriti', 'N26_BelfordRoxo', 'N30_Mage', 'N15_IlhaGovernador'],
+  'N22_DuqueCaxias': ['N23_SaoJoaoMeriti', 'N26_BelfordRoxo', 'N30_Mage', 'N15_IlhaGovernador', 'N14_Pavuna'],
   'N23_SaoJoaoMeriti': ['N22_DuqueCaxias', 'N24_Nilopolis', 'N26_BelfordRoxo', 'N14_Pavuna'],
-  'N24_Nilopolis': ['N23_SaoJoaoMeriti', 'N25_Mesquita'],
+  'N24_Nilopolis': ['N23_SaoJoaoMeriti', 'N25_Mesquita', 'N14_Pavuna'],
   'N25_Mesquita': ['N24_Nilopolis', 'N27_NovaIguacu'],
   'N26_BelfordRoxo': ['N22_DuqueCaxias', 'N23_SaoJoaoMeriti', 'N27_NovaIguacu'],
   'N27_NovaIguacu': ['N25_Mesquita', 'N26_BelfordRoxo', 'N28_Queimados', 'N19_CampoGrande'],
   'N28_Queimados': ['N27_NovaIguacu', 'N29_Japeri'],
   'N29_Japeri': ['N27_NovaIguacu', 'N28_Queimados', 'N20_SantaCruz'],
   'N30_Mage': ['N22_DuqueCaxias', 'N42_Guaxindiba'], 
-  // Leste Fluminense (Niterói e SG)
-  'N31_CentroNit': ['N32_Icarai', 'N35_Fonseca', 'N01_Centro'], 
-  'N32_Icarai': ['N31_CentroNit', 'N34_Pendotiba'],
-  'N33_RegiaoOceanica': ['N34_Pendotiba'],
-  'N34_Pendotiba': ['N32_Icarai', 'N33_RegiaoOceanica', 'N36_Engenhoca'],
+  
+  // Leste Fluminense (ATUALIZADO: Região Oceânica com rota dupla, Pendotiba <-> Neves ativada)
+  'N31_CentroNit': ['N32_Icarai', 'N35_Fonseca', 'N01_Centro', 'N36_Engenhoca'], 
+  'N32_Icarai': ['N31_CentroNit', 'N33_RegiaoOceanica', 'N34_Pendotiba', 'N36_Engenhoca'],
+  'N33_RegiaoOceanica': ['N32_Icarai', 'N34_Pendotiba'],
+  'N34_Pendotiba': ['N32_Icarai', 'N33_RegiaoOceanica', 'N36_Engenhoca', 'N37_Neves', 'N38_ZeGaroto'], // Adicionado N37
   'N35_Fonseca': ['N31_CentroNit', 'N36_Engenhoca', 'N37_Neves'],
-  'N36_Engenhoca': ['N34_Pendotiba', 'N35_Fonseca', 'N37_Neves'],
-  'N37_Neves': ['N35_Fonseca', 'N36_Engenhoca', 'N38_ZeGaroto'],
-  'N38_ZeGaroto': ['N37_Neves', 'N39_Mutua'],
-  'N39_Mutua': ['N38_ZeGaroto', 'N40_Alcantara'],
+  'N36_Engenhoca': ['N31_CentroNit', 'N32_Icarai', 'N34_Pendotiba', 'N35_Fonseca', 'N37_Neves'],
+  'N37_Neves': ['N34_Pendotiba', 'N35_Fonseca', 'N36_Engenhoca', 'N38_ZeGaroto'], // Adicionado N34
+  'N38_ZeGaroto': ['N34_Pendotiba', 'N37_Neves', 'N39_Mutua'],
+  'N39_Mutua': ['N38_ZeGaroto', 'N40_Alcantara', 'N41_JardimCatarina'], 
   'N40_Alcantara': ['N39_Mutua', 'N41_JardimCatarina', 'N42_Guaxindiba'],
-  'N41_JardimCatarina': ['N40_Alcantara', 'N42_Guaxindiba'],
+  'N41_JardimCatarina': ['N39_Mutua', 'N40_Alcantara', 'N42_Guaxindiba'],
   'N42_Guaxindiba': ['N40_Alcantara', 'N41_JardimCatarina', 'N30_Mage'] 
 };
 
@@ -80,6 +85,40 @@ export const WarRio = {
       initialTerritories[id] = { owner: (index % 4).toString(), armies: 1 };
     });
 
+    const playerIDs = ['0', '1', '2', '3'];
+    let objectives = [
+        {id: 'OB_01', type: 'continent', continent: 'Historico'}, {id: 'OB_02', type: 'continent', continent: 'ZonaSul'},
+        {id: 'OB_ZN', type: 'continent', continent: 'ZonaNorte'}, {id: 'OB_ZO', type: 'continent', continent: 'ZonaOeste'},
+        {id: 'OB_BX', type: 'continent', continent: 'Baixada'}, {id: 'OB_LS', type: 'continent', continent: 'Leste'},
+        {id: 'OB_D_0', type: 'destroy', target: '0'}, {id: 'OB_D_1', type: 'destroy', target: '1'},
+        {id: 'OB_D_2', type: 'destroy', target: '2'}, {id: 'OB_D_3', type: 'destroy', target: '3'}
+    ];
+    
+    let assignments = {};
+    let valid = false;
+    while(!valid) {
+      objectives = random.Shuffle(objectives);
+      valid = true;
+      assignments = {};
+      for(let i=0; i<playerIDs.length; i++) {
+        const pId = playerIDs[i];
+        const obj = objectives[i];
+        if(obj.type === 'destroy' && obj.target === pId) {
+          valid = false; break; 
+        }
+        assignments[pId] = obj;
+      }
+    }
+
+    // A MÁGICA: Embaralhamos as facções para garantir ordem de jogo 100% aleatória!
+    const baseFactions = [
+      { faction: 'CV', color: '#ff3333' },
+      { faction: 'TCP', color: '#33cc33' },
+      { faction: 'ADA', color: '#ffcc00' },
+      { faction: 'Milícia', color: '#3366ff' }
+    ];
+    const shuffledFactions = random.Shuffle(baseFactions);
+
     return {
       territories: initialTerritories,
       connections, 
@@ -99,54 +138,34 @@ export const WarRio = {
         { id: 'N31_CentroNit', shape: 'Triângulo' }, { id: 'N32_Icarai', shape: 'Quadrado' }, { id: 'N33_RegiaoOceanica', shape: 'Círculo' }, { id: 'N34_Pendotiba', shape: 'Triângulo' }, { id: 'N35_Fonseca', shape: 'Quadrado' }, { id: 'N36_Engenhoca', shape: 'Círculo' }, { id: 'N37_Neves', shape: 'Triângulo' }, { id: 'N38_ZeGaroto', shape: 'Quadrado' }, { id: 'N39_Mutua', shape: 'Círculo' }, { id: 'N40_Alcantara', shape: 'Triângulo' }, { id: 'N41_JardimCatarina', shape: 'Quadrado' }, { id: 'N42_Guaxindiba', shape: 'Círculo' },
         { id: 'Coringa', shape: 'Coringa' }, { id: 'Coringa2', shape: 'Coringa' }
       ],
+      // Os jogadores assumem as facções sorteadas
       players: {
-        '0': { faction: 'CV', color: '#ff3333', cards: [], conqueredThisTurn: false, eliminated: false, objective: null },   
-        '1': { faction: 'TCP', color: '#33cc33', cards: [], conqueredThisTurn: false, eliminated: false, objective: null },
-        '2': { faction: 'ADA', color: '#ffcc00', cards: [], conqueredThisTurn: false, eliminated: false, objective: null },
-        '3': { faction: 'Milícia', color: '#3366ff', cards: [], conqueredThisTurn: false, eliminated: false, objective: null }
+        '0': { faction: shuffledFactions[0].faction, color: shuffledFactions[0].color, cards: [], conqueredThisTurn: false, eliminated: false, objective: assignments['0'] },   
+        '1': { faction: shuffledFactions[1].faction, color: shuffledFactions[1].color, cards: [], conqueredThisTurn: false, eliminated: false, objective: assignments['1'] },
+        '2': { faction: shuffledFactions[2].faction, color: shuffledFactions[2].color, cards: [], conqueredThisTurn: false, eliminated: false, objective: assignments['2'] },
+        '3': { faction: shuffledFactions[3].faction, color: shuffledFactions[3].color, cards: [], conqueredThisTurn: false, eliminated: false, objective: assignments['3'] }
       },
-      objectives: [
-          {id: 'OB_01', type: 'continent', continent: 'Historico'}, {id: 'OB_02', type: 'continent', continent: 'ZonaSul'},
-          {id: 'OB_ZN', type: 'continent', continent: 'ZonaNorte'}, {id: 'OB_ZO', type: 'continent', continent: 'ZonaOeste'},
-          {id: 'OB_BX', type: 'continent', continent: 'Baixada'}, {id: 'OB_LS', type: 'continent', continent: 'Leste'},
-          {id: 'OB_D_0', type: 'destroy', target: '0'}, {id: 'OB_D_1', type: 'destroy', target: '1'},
-          {id: 'OB_D_2', type: 'destroy', target: '2'}, {id: 'OB_D_3', type: 'destroy', target: '3'}
-      ],
       troopsToPlace: 0, 
       tradeCount: 0, 
       lastCombat: null,
       pendingOccupation: null,
-      // NOVO: A Caderneta do Diário de Guerra
       log: [{ faction: 'SISTEMA', color: '#ffdd55', msg: 'As comunicações foram estabelecidas. A guerra começou!' }]
     };
   },
-  
+
   phases: {
-    initialDraft: {
+    // FASE ZERO: O motor segue o relógio normal, mas essa fase acaba rigorosamente após os 4 passarem.
+    initialReinforcement: {
       start: true,
+      next: 'main',
       turn: {
-        onBegin: ({ G, ctx, random }) => {
-          if (ctx.turn === 1 && !G.players['0'].objective) {
-            const playerIDs = Object.keys(G.players);
-            let objectives = random.Shuffle(G.objectives);
-            let assignments = {};
-            let valid = false;
-            while(!valid) {
-              objectives = random.Shuffle(objectives);
-              valid = true;
-              assignments = {};
-              for(let i=0; i<playerIDs.length; i++) {
-                const pId = playerIDs[i];
-                const obj = objectives[i];
-                if(obj.type === 'destroy' && obj.target === pId) {
-                  valid = false; break;
-                }
-                assignments[pId] = obj;
-              }
-            }
-            playerIDs.forEach(pId => { G.players[pId].objective = assignments[pId]; });
-          }
-          G.troopsToPlace = 10;
+        onBegin: ({ G, ctx }) => {
+          const ownedTerritories = Object.values(G.territories).filter(t => t.owner === ctx.currentPlayer).length;
+          G.troopsToPlace = Math.max(3, Math.floor(ownedTerritories / 2));
+          Object.values(G.continents).forEach(continent => {
+            const ownsAll = continent.territories.every(tId => G.territories[tId].owner === ctx.currentPlayer);
+            if (ownsAll) G.troopsToPlace += continent.bonus;
+          });
         },
         activePlayers: { currentPlayer: 'reinforcement' },
         stages: {
@@ -162,10 +181,11 @@ export const WarRio = {
           }
         }
       },
-      endIf: ({ ctx }) => ctx.turn > 4,
-      next: 'main'
+      // CORREÇÃO CRUCIAL: Só avança após o 4º turno ter sido concluído por inteiro.
+      endIf: ({ ctx }) => ctx.turn > 4, 
     },
 
+    // FASE DE GUERRA
     main: {
       turn: {
         onBegin: ({ G, ctx }) => {
@@ -222,7 +242,6 @@ export const WarRio = {
                 G.tradeCount += 1;
                 player.cards = player.cards.filter((_, index) => !cardIndices.includes(index));
 
-                // REGISTRA NO DIÁRIO DE GUERRA
                 G.log.push({
                   faction: player.faction,
                   color: player.color,
@@ -271,7 +290,6 @@ export const WarRio = {
                      G.pendingOccupation = { sourceId, targetId, maxExtra };
                   }
 
-                  // REGISTRA A CONQUISTA NO DIÁRIO
                   G.log.push({
                     faction: G.players[ctx.currentPlayer].faction,
                     color: G.players[ctx.currentPlayer].color,
@@ -282,7 +300,6 @@ export const WarRio = {
                   if (defenderTerritories === 0) {
                     G.players[originalTargetOwner].eliminated = true;
                     
-                    // REGISTRA A ELIMINAÇÃO NO DIÁRIO
                     G.log.push({
                       faction: 'SISTEMA',
                       color: '#ff4444',
@@ -294,7 +311,6 @@ export const WarRio = {
                       if (obj && obj.type === 'destroy' && obj.target === originalTargetOwner && pId !== ctx.currentPlayer) {
                         G.players[pId].objective = { id: 'OB_FALLBACK', type: 'territories', count: 6 };
                         
-                        // REGISTRA MUTAÇÃO TÁTICA
                         G.log.push({
                           faction: 'SISTEMA',
                           color: '#ffdd55',
@@ -353,7 +369,6 @@ export const WarRio = {
                      G.pendingOccupation = { sourceId, targetId, maxExtra };
                   }
 
-                  // REGISTRA A CONQUISTA NO DIÁRIO
                   G.log.push({
                     faction: G.players[ctx.currentPlayer].faction,
                     color: G.players[ctx.currentPlayer].color,
@@ -364,7 +379,6 @@ export const WarRio = {
                   if (defenderTerritories === 0) {
                     G.players[originalTargetOwner].eliminated = true;
 
-                    // REGISTRA A ELIMINAÇÃO NO DIÁRIO
                     G.log.push({
                       faction: 'SISTEMA',
                       color: '#ff4444',
@@ -376,7 +390,6 @@ export const WarRio = {
                       if (obj && obj.type === 'destroy' && obj.target === originalTargetOwner && pId !== ctx.currentPlayer) {
                         G.players[pId].objective = { id: 'OB_FALLBACK', type: 'territories', count: 6 };
 
-                        // REGISTRA MUTAÇÃO TÁTICA
                         G.log.push({
                           faction: 'SISTEMA',
                           color: '#ffdd55',
