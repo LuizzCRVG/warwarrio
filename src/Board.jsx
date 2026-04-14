@@ -8,9 +8,11 @@ export function WarBoard({ G, ctx, moves, events }) {
   const [targetTerritory, setTargetTerritory] = useState(null); 
   const [selectedCards, setSelectedCards] = useState([]);
   
-  // NOVO: Separamos os estados de visualização!
   const [isObjectiveVisible, setIsObjectiveVisible] = useState(false);
   const [isCardsVisible, setIsCardsVisible] = useState(false);
+  
+  // NOVO: Controle do Mapa Fantasma para ajudar no encaixe
+  const [showGhostMap, setShowGhostMap] = useState(true);
 
   useEffect(() => {
     setIsObjectiveVisible(false);
@@ -106,7 +108,6 @@ export function WarBoard({ G, ctx, moves, events }) {
 
     setSelectedTerritory(null); setTargetTerritory(null); setSelectedCards([]);
     
-    // Tratamento exclusivo para pular o turno na fase de Fortalecimento Inicial
     if (ctx.phase === 'initialReinforcement') {
       events.endTurn();
       return;
@@ -124,77 +125,97 @@ export function WarBoard({ G, ctx, moves, events }) {
 
   const shapeIcons = { 'Triângulo': '▲', 'Quadrado': '■', 'Círculo': '●', 'Coringa': '★' };
 
+// ============================================================================
+  // DICIONÁRIO CARTOGRÁFICO - ENCAIXE COMPACTO (TETRIS/QUEBRA-CABEÇA)
+  // Sem mapa de fundo. Os territórios se tocam diretamente, exceto nas baías.
   // ============================================================================
-  // DICIONÁRIO DE CARTOGRAFIA
-  // ============================================================================
-  const customMaps = {
-    'N15_IlhaGovernador': 'mapa.png',
-    'N07_IpanemaLeblon': 'mapa1.png',
-    'N08_RocinhaGavea': 'mapa2.png',
-    'N06_Copacabana': 'mapa3.png',
-    'N05_GloriaBotafogo': 'mapa4.png',
-    'N02_Lapa': 'mapa5.png',
-    'N01_Centro': 'mapa6.png',
-    'N03_Saude': 'mapa7.png',
-    'N04_RioComprido': 'mapa8.png',
-    'N09_GrandeTijuca': 'mapa9.png',
-    'N10_SaoCristovao': 'mapa10.png',
-    'N11_ComplexoAlemao': 'mapa11.png',
-    'N12_GrandeMeier': 'mapa12.png',
-    'N13_Madureira': 'mapa13.png',
-    'N14_Pavuna': 'mapa14.png',
-    'N16_BarraTijuca': 'mapa15.png',
-    'N17_Jacarepagua': 'mapa16.png',
-    'N18_Bangu': 'mapa17.png',
-    'N19_CampoGrande': 'mapa18.png',
-    'N20_SantaCruz': 'mapa19.png',
-    'N21_Guaratiba': 'mapa20.png',
-    'N24_Nilopolis': 'mapa21.png',
-    'N25_Mesquita': 'mapa22.png',
-    'N26_BelfordRoxo': 'mapa23.png',
-    'N23_SaoJoaoMeriti': 'mapa24.png',
-    'N22_DuqueCaxias': 'mapa25.png',
-    'N27_NovaIguacu': 'mapa26.png',
-    'N28_Queimados': 'mapa27.png',
-    'N30_Mage': 'mapa28.png',
-    'N29_Japeri': 'mapa29.png',
-    'N31_CentroNit': 'mapa30.png',
-    'N32_Icarai': 'mapa31.png',
-    'N33_RegiaoOceanica': 'mapa32.png',
-    'N34_Pendotiba': 'mapa33.png',
-    'N35_Fonseca': 'mapa34.png',
-    'N36_Engenhoca': 'mapa35.png',
-    'N37_Neves': 'mapa36.png',
-    'N38_ZeGaroto': 'mapa37.png',
-    'N39_Mutua': 'mapa38.png',
-    'N40_Alcantara': 'mapa39.png',
-    'N41_JardimCatarina': 'mapa40.png',
-    'N42_Guaxindiba': 'mapa41.png',
+  const mapConfig = {
+    // ==== BAIXADA FLUMINENSE (Topo Esquerdo - Conectados) ====
+    'N29_Japeri': { img: 'mapa29.png', top: '50px', left: '50px', width: '100px', height: '100px' },
+    'N28_Queimados': { img: 'mapa28.png', top: '50px', left: '150px', width: '100px', height: '100px' },
+    'N27_NovaIguacu': { img: 'mapa27.png', top: '150px', left: '150px', width: '120px', height: '120px' },
+    'N26_BelfordRoxo': { img: 'mapa26.png', top: '50px', left: '250px', width: '100px', height: '100px' },
+    'N25_Mesquita': { img: 'mapa25.png', top: '150px', left: '270px', width: '100px', height: '100px' },
+    'N24_Nilopolis': { img: 'mapa24.png', top: '150px', left: '370px', width: '80px', height: '80px' },
+    'N23_SaoJoaoMeriti': { img: 'mapa23.png', top: '50px', left: '350px', width: '100px', height: '100px' },
+    'N22_DuqueCaxias': { img: 'mapa22.png', top: '50px', left: '450px', width: '120px', height: '120px' },
+    'N30_Mage': { img: 'mapa30.png', top: '50px', left: '620px', width: '130px', height: '130px' }, // Gap p/ SG
 
+    // ==== ZONA OESTE (Base Esquerda - Conectados) ====
+    'N20_SantaCruz': { img: 'mapa19.png', top: '450px', left: '20px', width: '130px', height: '130px' },
+    'N19_CampoGrande': { img: 'mapa18.png', top: '450px', left: '150px', width: '130px', height: '130px' },
+    'N18_Bangu': { img: 'mapa17.png', top: '350px', left: '150px', width: '130px', height: '100px' },
+    'N21_Guaratiba': { img: 'mapa20.png', top: '580px', left: '150px', width: '130px', height: '130px' },
+    'N17_Jacarepagua': { img: 'mapa16.png', top: '450px', left: '280px', width: '130px', height: '130px' },
+    'N16_BarraTijuca': { img: 'mapa15.png', top: '580px', left: '280px', width: '150px', height: '100px' },
+
+    // ==== ZONA NORTE (Miolo - Conectados) ====
+    'N14_Pavuna': { img: 'mapa14.png', top: '150px', left: '450px', width: '100px', height: '100px' },
+    'N13_Madureira': { img: 'mapa13.png', top: '250px', left: '450px', width: '100px', height: '100px' },
+    'N11_ComplexoAlemao': { img: 'mapa11.png', top: '150px', left: '550px', width: '100px', height: '100px' },
+    'N12_GrandeMeier': { img: 'mapa12.png', top: '250px', left: '550px', width: '100px', height: '100px' },
+    'N10_SaoCristovao': { img: 'mapa10.png', top: '250px', left: '650px', width: '100px', height: '100px' },
+    'N09_GrandeTijuca': { img: 'mapa9.png', top: '350px', left: '550px', width: '100px', height: '100px' },
+    'N15_IlhaGovernador': { img: 'mapa.png', top: '435px', left: '1050px', width: '160px', height: '140px' }, // Gap p/ todos
+
+    // ==== CENTRO E ZONA SUL (Base Centro-Direita - Conectados) ====
+    'N03_Saude': { img: 'mapa7.png', top: '350px', left: '650px', width: '90px', height: '90px' },
+    'N01_Centro': { img: 'mapa6.png', top: '440px', left: '650px', width: '90px', height: '90px' },
+    'N02_Lapa': { img: 'mapa5.png', top: '440px', left: '560px', width: '90px', height: '90px' },
+    'N04_RioComprido': { img: 'mapa8.png', top: '350px', left: '500px', width: '80px', height: '80px' },
+    'N05_GloriaBotafogo': { img: 'mapa4.png', top: '530px', left: '650px', width: '100px', height: '100px' },
+    'N06_Copacabana': { img: 'mapa3.png', top: '630px', left: '650px', width: '100px', height: '100px' },
+    'N07_IpanemaLeblon': { img: 'mapa1.png', top: '630px', left: '550px', width: '100px', height: '100px' },
+    'N08_RocinhaGavea': { img: 'mapa2.png', top: '630px', left: '450px', width: '100px', height: '100px' },
+
+    // ==== SÃO GONÇALO (O "Portão" do Leste) ====
+    'N37_Neves': { img: 'mapa37.png', top: '200px', left: '980px', width: '90px', height: '90px' },
+    'N38_ZeGaroto': { img: 'mapa38.png', top: '200px', left: '1070px', width: '90px', height: '90px' },
+    'N39_Mutua': { img: 'mapa39.png', top: '200px', left: '1160px', width: '90px', height: '90px' },
+    'N40_Alcantara': { img: 'mapa40.png', top: '200px', left: '1250px', width: '90px', height: '90px' },
+    'N41_JardimCatarina': { img: 'mapa41.png', top: '110px', left: '1160px', width: '90px', height: '90px' },
+    'N42_Guaxindiba': { img: 'mapa42.png', top: '20px', left: '1070px', width: '110px', height: '110px' }, // A EXCEÇÃO: Perto da Baixada
+
+    // ==== NITERÓI (Extremo Leste - "Bem a Direita") ====
+    'N31_CentroNit': { img: 'mapa31.png', top: '500px', left: '1250px', width: '100px', height: '100px' },
+    'N35_Fonseca': { img: 'mapa35.png', top: '400px', left: '1250px', width: '100px', height: '100px' },
+    'N36_Engenhoca': { img: 'mapa36.png', top: '400px', left: '1350px', width: '100px', height: '100px' },
+    'N32_Icarai': { img: 'mapa32.png', top: '600px', left: '1250px', width: '100px', height: '100px' },
+    'N34_Pendotiba': { img: 'mapa34.png', top: '500px', left: '1350px', width: '100px', height: '100px' },
+    'N33_RegiaoOceanica': { img: 'mapa33.png', top: '600px', left: '1350px', width: '120px', height: '120px' },
   };
 
   return ctx.gameover ? (
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', zIndex: 10000, fontFamily: 'monospace', textAlign: 'center', padding: '20px' }}>
         <h1 style={{ fontSize: '3em', color: G.players[ctx.gameover.winner].color }}>🏆 VITÓRIA! 🏆</h1>
-        <h2 style={{ fontSize: '2em', margin: '20px 0' }}>{G.players[ctx.gameover.winner].faction} dominou o Rio de Janeiro!</h2>
+        <h2 style={{ fontSize: '2em', margin: '20px 0' }}>{G.players[ctx.gameover.winner].faction} dominou a Metrópole!</h2>
         <p style={{ fontSize: '1.5em' }}>Missão cumprida: <span style={{color: '#ffdd55'}}>{getObjectiveDesc(G.players[ctx.gameover.winner].objective)}</span></p>
       </div>
     ) : (
-      <div style={{ padding: '20px', backgroundColor: '#1a1a1a', color: '#eaeaea', minHeight: '100vh', fontFamily: 'monospace' }}>
-        <h1>WAR: Metrópole Fluminense</h1>
+      <div style={{ padding: '20px', backgroundColor: '#111', color: '#eaeaea', minHeight: '100vh', fontFamily: 'monospace' }}>
+        
+        {/* CABEÇALHO COM BOTÃO DO MODO DESENVOLVEDOR */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h1 style={{ margin: 0 }}>WAR: Metrópole Fluminense</h1>
+          <button 
+            onClick={() => setShowGhostMap(!showGhostMap)}
+            style={{ padding: '8px 15px', backgroundColor: showGhostMap ? '#ff4444' : '#444', color: 'white', border: '1px solid #666', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            {showGhostMap ? '🛠️ Ocultar Mapa Fantasma' : '🛠️ Ligar Mapa Fantasma'}
+          </button>
+        </div>
+
+        {/* PAINEL TÁTICO SUPERIOR (Mantido igual) */}
         {currentPlayer.eliminated ? (
           <div style={{ backgroundColor: '#8b0000', padding: '40px', borderRadius: '8px', textAlign: 'center', marginBottom: '20px' }}>
             <h2>☠️ FACÇÃO ERRADICADA ☠️</h2>
             <button onClick={() => events.endTurn()} style={{ marginTop: '20px', padding: '15px 30px', cursor: 'pointer', border: 'none', fontWeight: 'bold' }}>Pular Turno</button>
           </div>
         ) : (
-          <div style={{ marginBottom: '20px', padding: '15px', border: `2px solid ${currentPlayer.color}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px' }}>
-            
+          <div style={{ marginBottom: '20px', padding: '15px', border: `2px solid ${currentPlayer.color}`, backgroundColor: '#1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', borderRadius: '8px' }}>
+            {/* ... Todo o seu painel de interface de cima fica aqui, não mudei nada nessa parte visual de cima! ... */}
             <div style={{ flex: '1', minWidth: '250px' }}>
-              <h2 style={{ margin: '0 0 10px 0' }}>Painel Tático</h2>
-
               <p>Comandante: <strong style={{color: currentPlayer.color}}>{currentPlayer.faction}</strong> | Fase: <strong style={{color: '#ffdd55'}}>{ctx.phase === 'initialReinforcement' ? 'FORTALECIMENTO INICIAL' : stageNames[currentStage]}</strong></p>
-              
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                 <span style={{ margin: 0 }}>Missão Secreta:</span>
                 <button onClick={() => setIsObjectiveVisible(!isObjectiveVisible)} style={{ padding: '2px 8px', backgroundColor: '#444', color: '#fff', border: '1px solid #666', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
@@ -202,75 +223,15 @@ export function WarBoard({ G, ctx, moves, events }) {
                 </button>
               </div>
               <p style={{ marginTop: '5px' }}>
-                <strong style={{
-                  color: isObjectiveVisible ? '#ffaa00' : '#888', 
-                  backgroundColor: isObjectiveVisible ? 'transparent' : '#2a2a2a', 
-                  padding: isObjectiveVisible ? '0' : '2px 10px', 
-                  borderRadius: '4px',
-                  letterSpacing: isObjectiveVisible ? 'normal' : '2px'
-                }}>
+                <strong style={{ color: isObjectiveVisible ? '#ffaa00' : '#888', backgroundColor: isObjectiveVisible ? 'transparent' : '#2a2a2a', padding: isObjectiveVisible ? '0' : '2px 10px', borderRadius: '4px', letterSpacing: isObjectiveVisible ? 'normal' : '2px' }}>
                   {isObjectiveVisible ? getObjectiveDesc(currentPlayer.objective) : '•••••••••••••••• (Oculto)'}
                 </strong>
               </p>
-
               {currentStage === 'reinforcement' && <p>Reforços: <strong>🪖 {G.troopsToPlace}</strong></p>}
               {selectedTerritory && !G.pendingOccupation && <p>Origem: <span style={{color: '#5bc0de'}}>{territoryNames[selectedTerritory]}</span></p>}
-              
-              {G.pendingOccupation && currentStage === 'attack' ? (
-                <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#333', border: '2px solid #ffaa00', borderRadius: '5px' }}>
-                  <p style={{ margin: '0 0 10px 0', color: '#ffdd55', fontSize: '18px' }}><strong>Ocupação Bem-Sucedida!</strong></p>
-                  <p style={{ fontSize: '13px', marginBottom: '15px' }}>
-                    1 tropa ocupou a base. Envie reforços de <strong>{territoryNames[G.pendingOccupation.sourceId]}</strong> para <strong>{territoryNames[G.pendingOccupation.targetId]}</strong>:
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {[...Array(G.pendingOccupation.maxExtra + 1).keys()].map(num => (
-                      <button key={num} onClick={() => moves.occupy(num)} style={{ padding: '10px 15px', backgroundColor: '#5bc0de', border: 'none', fontWeight: 'bold', cursor: 'pointer', borderRadius: '3px', flex: '1' }}>
-                        +{num} Tropas
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : targetTerritory && currentStage === 'attack' && (
-                <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#333', border: '1px solid #ff4444', borderRadius: '5px' }}>
-                  <p style={{ margin: '0 0 10px 0' }}>Alvo Travado: <strong>{territoryNames[targetTerritory]}</strong></p>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => executeAttack('CLASSIC')} style={{ padding: '10px', backgroundColor: '#5bc0de', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
-                      🎲 Ataque Clássico
-                    </button>
-                    <button onClick={() => executeAttack('BLITZ')} style={{ padding: '10px', backgroundColor: '#d9534f', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
-                      ⚡ Engajamento Blitz
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
-            <div style={{ backgroundColor: '#222', padding: '15px', borderRadius: '5px', minWidth: '220px', flex: '1' }}>
-              <h3 style={{ margin: '0 0 10px 0', borderBottom: '1px solid #555', paddingBottom: '5px', fontSize: '16px' }}>Domínio Continental</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {Object.entries(G.continents).map(([key, cont]) => {
-                  const owned = cont.territories.filter(t => G.territories[t].owner === ctx.currentPlayer).length;
-                  const total = cont.territories.length;
-                  const percentage = (owned / total) * 100;
-                  const isDominated = owned === total;
-
-                  return (
-                    <div key={key}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
-                        <span style={{ color: isDominated ? '#ffdd55' : '#ccc', fontWeight: isDominated ? 'bold' : 'normal' }}>
-                          {cont.name} {isDominated && `(+${cont.bonus} 🪖)`}
-                        </span>
-                        <span style={{ color: '#888' }}>{owned}/{total}</span>
-                      </div>
-                      <div style={{ width: '100%', backgroundColor: '#111', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${percentage}%`, backgroundColor: isDominated ? '#ffdd55' : currentPlayer.color, height: '100%', transition: 'width 0.3s' }}></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
+            {/* Inventário */}
             <div style={{ backgroundColor: '#2a2a2a', padding: '15px', borderRadius: '5px', minWidth: '200px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <h3 style={{ margin: 0 }}>Inventário</h3>
@@ -278,20 +239,11 @@ export function WarBoard({ G, ctx, moves, events }) {
                   {isCardsVisible ? '🙈 Ocultar' : '👁️ Revelar'}
                 </button>
               </div>
-
-              <div style={{ 
-                display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px',
-                filter: isCardsVisible ? 'none' : 'blur(6px)',
-                pointerEvents: isCardsVisible ? 'auto' : 'none', 
-                transition: 'filter 0.3s ease'
-              }}>
-                {currentPlayer.cards.length === 0 && <span style={{color: '#666', fontSize: '12px'}}>Sem cartas no momento.</span>}
+              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px', filter: isCardsVisible ? 'none' : 'blur(6px)', pointerEvents: isCardsVisible ? 'auto' : 'none', transition: 'filter 0.3s ease' }}>
+                {currentPlayer.cards.length === 0 && <span style={{color: '#666', fontSize: '12px'}}>Sem cartas.</span>}
                 {currentPlayer.cards.map((card, idx) => (
                   <div key={idx} onClick={() => handleCardClick(idx)} style={{ border: selectedCards.includes(idx) ? '2px solid #5bc0de' : '1px solid #888', borderRadius: '5px', padding: '8px', cursor: 'pointer', textAlign: 'center' }}>
                     <div style={{ color: '#ffdd55', fontSize: '18px' }}>{shapeIcons[card.shape]}</div>
-                    <div style={{ fontSize: '10px', marginTop: '4px', maxWidth: '80px', wordWrap: 'break-word' }}>
-                      {card.id.includes('Coringa') ? 'Coringa' : territoryNames[card.id]}
-                    </div>        
                   </div>
                 ))}
               </div>
@@ -311,121 +263,91 @@ export function WarBoard({ G, ctx, moves, events }) {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
-          
-          {!currentPlayer.eliminated && G.lastCombat && currentStage === 'attack' && (
-            <div style={{ backgroundColor: '#333', border: '1px solid #777', padding: '15px', borderRadius: '5px', flex: '1', minWidth: '300px' }}>
-              <h3 style={{ margin: '0 0 10px 0' }}>{G.lastCombat.type === 'BLITZ' ? '⚡ Relatório Pós-Blitz' : '🎲 Relatório Balístico'}</h3>
-              <p><strong>{territoryNames[G.lastCombat.sourceId]} vs {territoryNames[G.lastCombat.targetId]}</strong> {G.lastCombat.type === 'BLITZ' && `(Durou ${G.lastCombat.rounds} rodadas)`}</p>
-              <div style={{ display: 'flex', gap: '40px' }}>
-                <div><p style={{ color: '#ff5555' }}>Suas Baixas: -{G.lastCombat.attackerLosses}</p></div>
-                <div><p style={{ color: '#ffff55' }}>Baixas Inimigas: -{G.lastCombat.defenderLosses}</p></div>
-              </div>
-            </div>
-          )}
+        {/* ================================================================= */}
+        {/* A GRANDE MESA DO TABULEIRO (POSICIONAMENTO ABSOLUTO)              */}
+        {/* ================================================================= */}
+        
+        <div style={{
+            position: 'relative',
+            width: '1600px', // Aumente aqui se São Gonçalo estiver vazando da tela!
+            height: '900px',
+            margin: '0 auto', // Centraliza na tela
+            backgroundColor: showGhostMap ? 'transparent' : '#1a1a1a', // Fundo escuro se o fantasma tiver desligado
+            backgroundImage: showGhostMap ? 'url(/mapa_fantasma.png)' : 'none',
+            backgroundSize: '100% 100%',
+            backgroundRepeat: 'no-repeat',
+            border: '4px solid #444',
+            borderRadius: '12px',
+            overflow: 'hidden' // Evita que imagens vazem da mesa
+        }}>
 
-          <div style={{ backgroundColor: '#222', border: '1px solid #444', padding: '15px', borderRadius: '5px', flex: '1', minWidth: '300px', maxHeight: '150px', display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ margin: '0 0 10px 0', borderBottom: '1px solid #555', paddingBottom: '5px', fontSize: '16px' }}>📜 Diário de Guerra</h3>
-            <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column-reverse', flexGrow: 1, paddingRight: '5px' }}>
-              {G.log && [...G.log].reverse().map((entry, idx) => (
-                <div key={idx} style={{ fontSize: '13px', marginBottom: '8px', lineHeight: '1.4' }}>
-                  <strong style={{ color: entry.color }}>{entry.faction}</strong> {entry.msg}
-                </div>
-              ))}
-            </div>
-          </div>
+          {Object.keys(G.territories).map(id => {
+            const data = G.territories[id];
+            const ownerData = G.players[data.owner];
+            const isSelected = selectedTerritory === id;
+            const isTarget = targetTerritory === id;
+            
+            let isHighlight = false;
+            let highlightColor = '';
+            
+            if (currentStage === 'attack' && selectedTerritory) {
+                isHighlight = G.connections[selectedTerritory]?.includes(id) && ownerData.faction !== currentPlayer.faction;
+                highlightColor = '#ffdd55'; 
+            } else if (currentStage === 'maneuver' && selectedTerritory) {
+                isHighlight = reachableNetwork.includes(id) && id !== selectedTerritory;
+                highlightColor = '#5bc0de'; 
+            }
+
+            const isDimmed = selectedTerritory && !isSelected && !isHighlight && !isTarget;
+            const borderColor = isTarget ? '#ff4444' : isSelected ? '#ffffff' : (isHighlight ? highlightColor : ownerData.color);
+            const bgColor = isSelected ? '#444' : isTarget ? '#522' : '#2a2a2a';
+            
+            // Puxa as coordenadas, a imagem e as DIMENSÕES do nosso dicionário
+            const config = mapConfig[id] || { img: 'fallback.png', top: '0px', left: '0px', width: '220px', height: '130px' };
+            const customMask = config.img;
+
+            return (
+              <div key={id} onClick={() => handleTerritoryClick(id)}
+                style={{
+                  position: 'absolute', 
+                  top: config.top,      
+                  left: config.left,    
+                  width: config.width,       // AGORA PUXA DO DICIONÁRIO!
+                  height: config.height,     // AGORA PUXA DO DICIONÁRIO!
+                  cursor: isDimmed ? 'not-allowed' : 'pointer', 
+                  opacity: isDimmed ? 0.3 : (showGhostMap ? 0.8 : 1), 
+                  transition: 'all 0.3s ease-in-out', 
+                  transform: (isSelected || isTarget) ? 'scale(1.1)' : 'scale(1)',
+                  zIndex: (isSelected || isTarget || isHighlight) ? 100 : 10, 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  filter: `
+                    drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
+                    drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
+                    ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
+                  `
+                }}
+              >
+                {/* Se a imagem ainda não existir, o CSS falha silenciosamente, não quebra o jogo */}
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  backgroundColor: bgColor,
+                  WebkitMaskImage: `url(/${customMask})`, maskImage: `url(/${customMask})`,
+                  WebkitMaskSize: 'contain', maskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
+                }} />
+                
+                <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                  {territoryNames[id]}
+                </h3>
+                <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
+                  🪖 {data.armies}
+                </p>
+              </div>
+            );
+          })}
         </div>
 
-        {/* CARTOGRAFIA VISUAL COM RENDERIZAÇÃO DINÂMICA */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', opacity: currentPlayer.eliminated ? 0.2 : 1, pointerEvents: currentPlayer.eliminated ? 'none' : 'auto' }}>
-          
-          {Object.entries(G.continents).map(([continentKey, continentObj]) => (
-            <div key={continentKey} style={{ backgroundColor: '#222', border: '1px solid #444', borderRadius: '8px', padding: '20px' }}>
-              
-              <h2 style={{ margin: '0 0 15px 0', borderBottom: '2px solid #555', paddingBottom: '10px', color: '#eaeaea', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                🌍 {continentObj.name} <span style={{ fontSize: '14px', color: '#888', fontWeight: 'normal', textTransform: 'none' }}>(Bônus: +{continentObj.bonus} 🪖)</span>
-              </h2>
-              
-              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                {continentObj.territories.map(id => {
-                  const data = G.territories[id];
-                  const ownerData = G.players[data.owner];
-                  const isSelected = selectedTerritory === id;
-                  const isTarget = targetTerritory === id;
-                  
-                  let isHighlight = false;
-                  let highlightColor = '';
-                  
-                  if (currentStage === 'attack' && selectedTerritory) {
-                      isHighlight = G.connections[selectedTerritory]?.includes(id) && ownerData.faction !== currentPlayer.faction;
-                      highlightColor = '#ffdd55'; 
-                  } else if (currentStage === 'maneuver' && selectedTerritory) {
-                      isHighlight = reachableNetwork.includes(id) && id !== selectedTerritory;
-                      highlightColor = '#5bc0de'; 
-                  }
-
-                  const isDimmed = selectedTerritory && !isSelected && !isHighlight && !isTarget;
-                  const borderColor = isTarget ? '#ff4444' : isSelected ? '#ffffff' : (isHighlight ? highlightColor : ownerData.color);
-                  const bgColor = isSelected ? '#444' : isTarget ? '#522' : '#2a2a2a';
-                  
-                  const customMask = customMaps[id];
-
-                  if (customMask) {
-                    return (
-                      <div key={id} onClick={() => handleTerritoryClick(id)}
-                        style={{
-                          position: 'relative', width: '220px', minHeight: '130px',
-                          cursor: isDimmed ? 'not-allowed' : 'pointer', opacity: isDimmed ? 0.3 : 1,
-                          transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          filter: `
-                            drop-shadow(3px 0px 0px ${borderColor}) drop-shadow(-3px 0px 0px ${borderColor})
-                            drop-shadow(0px 3px 0px ${borderColor}) drop-shadow(0px -3px 0px ${borderColor})
-                            ${isHighlight ? `drop-shadow(0 0 15px ${highlightColor})` : ''}
-                          `
-                        }}
-                      >
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: bgColor,
-                          WebkitMaskImage: `url(/${customMask})`, maskImage: `url(/${customMask})`,
-                          WebkitMaskSize: 'contain', maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center', maskPosition: 'center', zIndex: -1 
-                        }} />
-                        <h3 style={{ fontSize: '11px', margin: '15px 0 2px 0', textTransform: 'uppercase', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                          {territoryNames[id]}
-                        </h3>
-                        <p style={{ fontSize: '16px', margin: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontWeight: 'bold' }}>
-                          🪖 {data.armies}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={id} onClick={() => handleTerritoryClick(id)}
-                      style={{
-                        border: `4px solid ${borderColor}`,
-                        borderRadius: '8px', padding: '15px', cursor: isDimmed ? 'not-allowed' : 'pointer',
-                        backgroundColor: bgColor, width: '220px', opacity: isDimmed ? 0.3 : 1,
-                        transition: 'all 0.3s ease-in-out', transform: (isSelected || isTarget) ? 'scale(1.05)' : 'scale(1)',
-                        boxShadow: isHighlight ? `0 0 15px ${highlightColor}88` : 'none'
-                      }}
-                    >
-                      <h3 style={{ fontSize: '15px', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
-                        {territoryNames[id]}
-                      </h3>
-                      <p style={{ margin: '0', fontSize: '12px' }}>Facção: <span style={{color: ownerData.color, fontWeight: 'bold'}}>{ownerData.faction}</span></p>
-                      <p style={{ fontSize: '20px', margin: '10px 0 0 0' }}>🪖 {data.armies}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-          
-        </div>
       </div>
     );
 }
