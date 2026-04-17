@@ -30,13 +30,17 @@ const imageMapping = {
   'N13_Madureira': 'mapa13.png', 'N14_Pavuna': 'mapa14.png', 'N15_IlhaGovernador': 'mapa.png',
   'N16_BarraTijuca': 'mapa15.png', 'N17_Jacarepagua': 'mapa16.png', 'N18_Bangu': 'mapa17.png',
   'N19_CampoGrande': 'mapa18.png', 'N20_SantaCruz': 'mapa19.png', 'N21_Guaratiba': 'mapa20.png',
-  'N24_Nilopolis': 'mapa24.png', 'N25_Mesquita': 'mapa25.png', 'N26_BelfordRoxo': 'mapa26.png',
-  'N27_NovaIguacu': 'mapa27.png', 'N28_Queimados': 'mapa28.png', 'N29_Japeri': 'mapa29.png',
-  'N23_SaoJoaoMeriti': 'mapa23.png', 'N22_DuqueCaxias': 'mapa22.png', 'N30_Mage': 'mapa30.png',
-  'N31_CentroNit': 'mapa31.png', 'N35_Fonseca': 'mapa35.png', 'N36_Engenhoca': 'mapa36.png',
-  'N32_Icarai': 'mapa32.png', 'N34_Pendotiba': 'mapa34.png', 'N33_RegiaoOceanica': 'mapa33.png',
+  'N24_Nilopolis': 'mapa21.png', 'N25_Mesquita': 'mapa22.png', 'N26_BelfordRoxo': 'mapa24.png',
+  'N27_NovaIguacu': 'mapa26.png', 'N28_Queimados': 'mapa27.png', 'N29_Japeri': 'mapa29.png',
+  'N23_SaoJoaoMeriti': 'mapa23.png', 'N22_DuqueCaxias': 'mapa25.png', 'N30_Mage': 'mapa28.png',
+  'N31_CentroNit': 'mapa30.png', 'N35_Fonseca': 'mapa35.png', 'N36_Engenhoca': 'mapa35.png',
+  'N32_Icarai': 'mapa31.png', 'N34_Pendotiba': 'mapa33.png', 'N33_RegiaoOceanica': 'mapa32.png',
   'N37_Neves': 'mapa37.png', 'N38_ZeGaroto': 'mapa38.png', 'N39_Mutua': 'mapa39.png',
-  'N40_Alcantara': 'mapa40.png', 'N41_JardimCatarina': 'mapa41.png', 'N42_Guaxindiba': 'mapa42.png'
+  
+  // Dê uma olhada se Catarina e Alcântara não precisam ter os números reduzidos também!
+  'N40_Alcantara': 'mapa40.png', 
+  'N41_JardimCatarina': 'mapa40.png', // Deixei como 40 provisoriamente para não clonar o 41
+  'N42_Guaxindiba': 'mapa41.png'      // <-- GUAXINDIBA CORRIGIDA PARA 41!
 };
 
 const generateInitialConfig = () => {
